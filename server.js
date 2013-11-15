@@ -13,50 +13,34 @@ app.listen(8080);
 
 function handler(request, response) {
 
-    var uri = url.parse(request.url).pathname
-        , filename = path.join(process.cwd(), uri);
+    var parsedUrl = url.parse(request.url, true); // true to get query as object
+    //the path
+    var uri = parsedUrl.pathname;
+    //Get query params as object
+    var params = parsedUrl.query;
+
+     filename = path.join(process.cwd(), uri);
 
     path.exists(filename, function(exists) {
+        console.log(params);
         if(uri=="/getstring"){
-
-
             requestApp({
-                uri: "http://www.hebcal.com/converter/?cfg=json&gy=2013&gm=06&gd=06&g2h=1",
+                uri: "http://www.hebcal.com/converter/?cfg=json&gy="+params["gy"]+"&gm="+params["gm"]+"&gd="+params["gd"]+"&g2h=1",
                 method: "GET",
                 timeout: 10000,
                 followRedirect: true,
-                maxRedirects: 10
+                maxRedirects: 10,
+                json:true
+
             }, function(error, responses, body) {
-                response.writeHead(200, {"Content-Type": "text/plain"});
-                response.end(body);
+                response.writeHead(200, {"Content-Type": "application/json"});
+                response.end((body["hd"]).toString()+"/"+body["hm"]+"?"+params["index"]);
                 console.log(body);
             });
 
-//            $.ajax({
-//            url: "http://www.hebcal.com/converter/?cfg=json&gy=2013&gm=06&gd=06&g2h=1",
-////                url: "http://localhost:8080/getstring",
-//                type: "Get",
-////                dataType:"text",
-//                success: function (data) {
-//                    response.writeHead(200, {"Content-Type": "text/plain"});
-//                    response.end(data["hebrew"]);
-//
-//                },
-//                error: function (err) {
-//
-//                    alert(err);
-//
-//                }
-//            });
             return;
-
-
-
-
-
-
-
         }
+
 
 
         if(!exists) {
